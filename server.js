@@ -25,7 +25,7 @@ const reconnectTime= 3500;
 const db = mongoose.connection;
 
 function connect(){
-  mongoose.connect(dbURI,{ auto_reconect:true,useNewUrlParser: true })
+  mongoose.connect(dbURI,{ useNewUrlParser: true })
   .catch(() => {});
 }
 
@@ -49,8 +49,8 @@ db.on('reconnected', () => {
 });
 
 db.on('disconnected', () => {
-  console.error(`MongoDB disconnected! Reconnecting in ${reconnectTimeout / 1000}s...`);
-  setTimeout(() => connect(), reconnectTimeout);
+  console.error(`MongoDB disconnected! Reconnecting in ${reconnectTime / 1000}s...`);
+  setTimeout(() => connect(), reconnectTime);
 });
 
 connect();
