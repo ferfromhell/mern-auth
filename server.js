@@ -21,9 +21,43 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 const dbURI = require('./config/keys').mongoURI;
-mongoose.connect(dbURI,{ useNewUrlParser: true })
-  .then(()=> console.log('Connected to mongoDB'))
-  .catch(err => console.log(err));
+const reconnectTime= 3500;
+const db = mongoose.connection;
+
+function connect(){
+  mongoose.connect(dbURI,{ auto_reconect:true,useNewUrlParser: true })
+  .catch(() => {});
+}
+
+db.on('connecting', () => {
+  console.info('Connecting to MongoDB...');
+});
+db.on('error', (error) => {
+  console.error(`MongoDB connection error: ${error}`);
+  mongoose.disconnect();
+});
+db.on('connected', () => {
+  console.info('Connected to MongoDB!');
+});
+
+db.once('open', () => {
+  console.info('MongoDB connection opened!');
+});
+
+db.on('reconnected', () => {
+  console.info('MongoDB reconnected!');
+});
+
+db.on('disconnected', () => {
+  console.error(`MongoDB disconnected! Reconnecting in ${reconnectTimeout / 1000}s...`);
+  setTimeout(() => connect(), reconnectTimeout);
+});
+
+connect();
+
+// mongoose.connect(dbURI,{ useNewUrlParser: true })
+//   .then(()=> console.log('Connected to mongoDB'))
+//   .catch(err => console.log(err));
 
 // Passport middleware
 app.use(passport.initialize());
